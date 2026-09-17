@@ -69,9 +69,17 @@ namespace LinqEtSeedEF.Controllers
             // TODO: Écrire la logique pour trouver le prix du plat le plus cher avec une boucle
             var liste = _context.Plat.ToList();
             decimal prix = 0;
+            for (int i = 0; i < liste.Count; i++)
+            {
+                if (liste[i].Prix > prix)
+                {
+                    prix = liste[i].Prix;
+                }
+            }
             // TODO: Écrire la logique pour trouver le prix du plat le plus cher avec Linq
             // Utilisez Max
             decimal prixLinq = 0;
+            prixLinq = _context.Plat.Max(p => p.Prix);
 
             return new DecimalViewModel("Quel est le prix du plat le plus cher?", prix, prixLinq);
         }
@@ -79,26 +87,105 @@ namespace LinqEtSeedEF.Controllers
         private DecimalViewModel ValeurTotalDesPlats()
         {
             // TODO: Calculer la valeur totale des plats avec boucle et Linq
+
+            decimal total = 0;
+
+            var liste = _context.Plat.ToList();
+
+            for (int i = 0; i < liste.Count(); i++ )
+            {
+
+                total += liste[i].Prix;
+
+            }
+
             // Utilisez Sum avec Linq
-            return new DecimalViewModel("Quelle est la valeur totale des plats?", 0, 0);
+
+            decimal prixLinq = _context.Plat.Sum(p => p.Prix);
+
+            return new DecimalViewModel("Quelle est la valeur totale des plats?", total, prixLinq);
         }
 
         private DecimalViewModel ValeurTotalDesCommandes(string nomClient)
         {
             // TODO: Calculer la valeur totale des commandes du client [nomClient] avec boucle et Linq
-            
+
+            Decimal total = 0;
+
+            foreach (var commande in _context.Commande)
+            {
+
+                if (commande.Client.Nom == nomClient)
+                {
+
+                    foreach (var commandePlat in commande.CommandesPlats)
+                    {
+
+                        total += commandePlat.Quantite * commandePlat.Plat.Prix;
+
+                    }
+
+                }
+
+            }
+
+
+
+            //decimal total = 0;
+
+            //foreach (var c in _context.Commande)
+            //{
+               
+            //    if (c.Client.Nom == nomClient)
+            //    {
+            //        decimal totalCom = 0;
+
+            //        foreach (var cp in c.CommandesPlats)
+            //        {
+
+            //            totalCom += cp.Plat.Prix * cp.Quantite;
+
+            //        }
+
+            //        total += totalCom;
+            //    }
+
+            //}
+
+
             // Linq: Utilisez Where et 2 fois Sum
             var listeLinq = _context.Commande.ToList();
             // Attention: c'est plus facile si vous faites un ToList() et faites le linq sur la liste et non pas le DbSet
             // on en parlera au prochain cours
             // Faites votre requête Linq sur listeLinq
 
-            return new DecimalViewModel("Quelle est la valeur totale des commandes de " + nomClient + "?", 0, 0);
+
+            var totalLinq = listeLinq.Where(commande => commande.Client.Nom == nomClient).Sum(commande => commande.CommandesPlats.Sum(CommandePlat => CommandePlat.Quantite * CommandePlat.Plat.Prix));
+
+
+            return new DecimalViewModel("Quelle est la valeur totale des commandes de " + nomClient + "?", total, totalLinq);
         }
 
         private DecimalViewModel PrixCommandeLaPlusCher()
         {
             // TODO: Trouver le côut total de la commande la plus chère
+            
+            decimal total = 0;
+            foreach (var commande in _context.Commande)
+            {
+                foreach (var commandePlat in commande.CommandesPlats)
+                {
+                    decimal prixCommande = commandePlat.Quantite * commandePlat.Plat.Prix;
+
+                    if (total < prixCommande)
+                    {
+
+                        total = prixCommande;
+
+                    }
+                }
+            }
+
             
             // Linq: Utilisez Sum et Max
             var listeLinq = _context.Commande.ToList();
@@ -106,7 +193,9 @@ namespace LinqEtSeedEF.Controllers
             // on en parlera au prochain cours
             // Faites votre requête Linq sur listeLinq
 
-            return new DecimalViewModel("Quel est le prix de la commande la plus chère?", 0, 0);
+            var totalLinq = listeLinq.Max(commande => commande.CommandesPlats.Sum(commande => commande.Quantite * commande.Plat.Prix));
+
+            return new DecimalViewModel("Quel est le prix de la commande la plus chère?", total, totalLinq);
         }
 
         private VegetarienViewModel Vegetarien(string nomDuResto)
