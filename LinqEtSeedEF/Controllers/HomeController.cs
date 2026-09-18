@@ -219,6 +219,10 @@ namespace LinqEtSeedEF.Controllers
                         {
                             optionVege = true;
                         }
+                        else
+                        {
+                            optionVege = false;
+                        }
                     }
                 }
             }
@@ -237,7 +241,7 @@ namespace LinqEtSeedEF.Controllers
 
                         if (plat.Vegetarien)
                         {
-                            optionVege = true;
+                            toutVege = true;
                         }
                         else
                         {
@@ -254,8 +258,9 @@ namespace LinqEtSeedEF.Controllers
             bool? optionVegeLinq = null;
             bool? toutVegeLinq = null;
 
-            //var optionVegeLinq = _context.Restaurant.Where(r => r.Nom == nomDuResto).Any();
+            optionVegeLinq = (_context.Plat.Where(r => r.Restaurant.Nom == nomDuResto).Any(p => p.Vegetarien)) ? true : false;
 
+            toutVegeLinq = (_context.Plat.Where(r => r.Restaurant.Nom == nomDuResto).All(p => p.Vegetarien)) ? true : false;
 
             return new VegetarienViewModel("Status végétarien du restaurant : " + nomDuResto, toutVege, toutVegeLinq, optionVege, optionVegeLinq);
         }
@@ -277,6 +282,26 @@ namespace LinqEtSeedEF.Controllers
             // Note: Il y a une méthode ComparerPrix qui est déjà fournie au dessus
             // Remplir la liste avec une boucle
             List<Plat> plats = new List<Plat>();
+
+            var listPl = _context.Plat.ToList();
+
+            for (int i = 0; i < listPl.Count; i++)
+            {
+
+                if (listPl[i].Vegetarien)
+                {
+                    if (listPl[i].Prix < listPl[i + 1].Prix)
+                    {
+
+                        plats.Add(listPl[i]);
+
+                    }
+                }
+            }
+
+            
+
+
             // Obtenir la liste avec Linq
             // Utilisez Where, OrderBy et ToList
             List<Plat> platsLinq = new List<Plat>();
