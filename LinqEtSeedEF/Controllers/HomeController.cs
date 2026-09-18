@@ -169,24 +169,27 @@ namespace LinqEtSeedEF.Controllers
         private DecimalViewModel PrixCommandeLaPlusCher()
         {
             // TODO: Trouver le côut total de la commande la plus chère
-            
-            decimal total = 0;
+
+            decimal totalMajeur = 0;
+
             foreach (var commande in _context.Commande)
             {
+                Decimal prixCommande = 0;
+
                 foreach (var commandePlat in commande.CommandesPlats)
                 {
-                    decimal prixCommande = commandePlat.Quantite * commandePlat.Plat.Prix;
 
-                    if (total < prixCommande)
+                    decimal prixPlates = commandePlat.Quantite * commandePlat.Plat.Prix;
+
+                    prixCommande += prixPlates;
+
+                    if (totalMajeur < prixCommande)
                     {
-
-                        total = prixCommande;
-
+                        totalMajeur = prixCommande;
                     }
                 }
             }
 
-            
             // Linq: Utilisez Sum et Max
             var listeLinq = _context.Commande.ToList();
             // Attention: c'est plus facile si vous faites un ToList() et faites le linq sur la liste et non pas le DbSet
@@ -195,20 +198,64 @@ namespace LinqEtSeedEF.Controllers
 
             var totalLinq = listeLinq.Max(commande => commande.CommandesPlats.Sum(commande => commande.Quantite * commande.Plat.Prix));
 
-            return new DecimalViewModel("Quel est le prix de la commande la plus chère?", total, totalLinq);
+            return new DecimalViewModel("Quel est le prix de la commande la plus chère?", totalMajeur, totalLinq);
         }
 
         private VegetarienViewModel Vegetarien(string nomDuResto)
         {
             // TODO: Est-ce que le restaurant avec le nom [nomDuRest] a au moins un plat végé?
             bool? optionVege = null;
+
+            foreach (var restaurant in _context.Restaurant)
+            {
+
+                if (restaurant.Nom == nomDuResto)
+                {
+
+                    foreach (var plat in restaurant.Plats)
+                    {
+
+                        if (plat.Vegetarien)
+                        {
+                            optionVege = true;
+                        }
+                    }
+                }
+            }
+
             // TODO: Est-ce que le restaurant a UNIQUEMENT des plats végés?
             bool? toutVege = null;
+
+            foreach (var restaurant in _context.Restaurant)
+            {
+
+                if (restaurant.Nom == nomDuResto)
+                {
+
+                    foreach (var plat in restaurant.Plats)
+                    {
+
+                        if (plat.Vegetarien)
+                        {
+                            optionVege = true;
+                        }
+                        else
+                        {
+                            toutVege = false;
+
+                            break;
+                        }
+                    }
+                }
+            }
 
             // TODO: Même chose, mais avec Linq
             // Utilisez Where, All et Any
             bool? optionVegeLinq = null;
             bool? toutVegeLinq = null;
+
+            //var optionVegeLinq = _context.Restaurant.Where(r => r.Nom == nomDuResto).Any();
+
 
             return new VegetarienViewModel("Status végétarien du restaurant : " + nomDuResto, toutVege, toutVegeLinq, optionVege, optionVegeLinq);
         }
