@@ -281,23 +281,37 @@ namespace LinqEtSeedEF.Controllers
             // Remplir une liste avec les plats végés en ordre croissant de prix
             // Note: Il y a une méthode ComparerPrix qui est déjà fournie au dessus
             // Remplir la liste avec une boucle
-            List<Plat> plats = new List<Plat>();
+            List<Plat> platsVege = new List<Plat>();
 
-            var listPl = _context.Plat.ToList();
+            var tousLesPlats = _context.Plat.ToList();
 
-            for (int i = 0; i < listPl.Count; i++)
+            for (int i = 0; i < tousLesPlats.Count; i++)
             {
 
-                if (listPl[i].Vegetarien)
+                if (tousLesPlats[i].Vegetarien)
                 {
-                    if (listPl[i].Prix < listPl[i + 1].Prix)
+
+                    if (platsVege.Count == 0)
                     {
+                        platsVege
+                    }
 
-                        plats.Add(listPl[i]);
-
+                    try
+                    {
+                        
+                        if (tousLesPlats[i].Prix < tousLesPlats[i+1].Prix)
+                        {
+                            platsVege.Insert(i, tousLesPlats[i]);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        
+                        platsVege.Add(tousLesPlats[i]);
                     }
                 }
             }
+
 
             
 
@@ -306,7 +320,7 @@ namespace LinqEtSeedEF.Controllers
             // Utilisez Where, OrderBy et ToList
             List<Plat> platsLinq = new List<Plat>();
 
-            return new PlatsViewModel("Quels sont les plats végétariens?", plats, platsLinq);
+            return new PlatsViewModel("Quels sont les plats végétariens?", platsVege, platsLinq);
         }
 
         private PlatsViewModel PlatsLesPlusChersOrdeDecroissantDePrix(int nbPlats)
